@@ -54,6 +54,7 @@ public class MainForm extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("TRG gps Scraper v 1.0");
 
         BrowseFileButton.setText("Browse");
         BrowseFileButton.addActionListener(new java.awt.event.ActionListener() {
@@ -216,7 +217,8 @@ public class MainForm extends javax.swing.JFrame {
 
     private void RunButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RunButtonActionPerformed
         // TODO add your handling code here:
-        
+        ScrapeAway TheScraper = new ScrapeAway(FileNameField.getText(),DateField.getText(),StartTimeField.getText(),EndTimeField.getText());
+        TheScraper.ListGPXdata();
     }//GEN-LAST:event_RunButtonActionPerformed
 
     private void BrowseFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BrowseFileButtonActionPerformed
