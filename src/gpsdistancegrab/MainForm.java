@@ -8,6 +8,9 @@ import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import javax.swing.JFileChooser;
+import java.util.Vector;
+import java.text.DecimalFormat;
+import java.io.*;
 
 /**
  *
@@ -218,7 +221,9 @@ public class MainForm extends javax.swing.JFrame {
     private void RunButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RunButtonActionPerformed
         // TODO add your handling code here:
         ScrapeAway TheScraper = new ScrapeAway(FileNameField.getText(),DateField.getText(),StartTimeField.getText(),EndTimeField.getText());
-        TheScraper.ListGPXdata();
+        Vector<JourneyStats> Statistics = TheScraper.ListGPXdata();
+        
+        OutputRunStatistics(Statistics);
     }//GEN-LAST:event_RunButtonActionPerformed
 
     private void BrowseFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BrowseFileButtonActionPerformed
@@ -231,7 +236,7 @@ public class MainForm extends javax.swing.JFrame {
         {
             String Filename = fc.getSelectedFile().getPath();
             FileNameField.setText(Filename);
-            OutputTextArea.append(Filename + '\n');
+            //OutputTextArea.append(Filename + '\n');
         }
     }//GEN-LAST:event_BrowseFileButtonActionPerformed
 
@@ -277,6 +282,80 @@ public class MainForm extends javax.swing.JFrame {
         });
         
         
+    }
+    
+    private void OutputRunStatistics(Vector<JourneyStats> TheStats)
+    {
+        double TotalDistance = 0;
+        double AverageDistance;
+        double AverageSpeed1 = 0;
+        double AverageSpeed2 = 0;
+        double TotalTime = 0;
+        double AverageTime = 0;
+        
+        int N = TheStats.size();
+        
+        for(JourneyStats st : TheStats)
+        {
+            TotalDistance += st.DistanceTravelled;
+            AverageSpeed1 += st.AvSpeed1;
+            AverageSpeed2 += st.AvSpeed2;
+            TotalTime += st.TimeTaken;
+        }
+        
+        AverageDistance = TotalDistance/N;
+        AverageSpeed1 = AverageSpeed1/N;
+        AverageSpeed2 = AverageSpeed2/N;
+        AverageTime = TotalTime/N;
+        
+        //WRITE the output string
+        
+        DecimalFormat form = new DecimalFormat("0.00");
+        
+        String TheOutput="";
+        TimeStamper Now = new TimeStamper();
+        TheOutput += ("Run on " + Now.ReturnGuiTime() + "\n");
+        TheOutput += ("Data Folder: " + FileNameField.getText()+ "\n\n");
+        
+        TheOutput += ("**Average Data**\n");
+        TheOutput += ("Number of Vehicles: " + Integer.toString(N) + "\n");
+        TheOutput += ("Total Distance: " +form.format(TotalDistance/1000) + " km\n");
+        TheOutput += ("Average Distance: " +form.format(AverageDistance/1000) + " km\n");
+        TheOutput += ("Average Speed 1: " +form.format(AverageSpeed1*3.6) + " kph\n");
+        TheOutput += ("Average Speed 2: " +form.format(AverageSpeed2*3.6) + " kph\n");
+        TheOutput += ("Total Time: " +form.format(TotalTime/60) + " min\n");
+        TheOutput += ("Average Time: " +form.format(AverageTime/60) + " min\n\n");
+        
+        TheOutput +=("**Individual vehicle data**\n");
+        TheOutput +=("Car, Distance (m), Av Speed 1 (m/s), Total Time (s), Start, End\n");
+        
+        int i=1;
+        for(JourneyStats st : TheStats)
+        {
+            TheOutput += (form.format(i)+", "+form.format(st.DistanceTravelled)+", "+form.format(st.AvSpeed1)+", "+form.format(st.TimeTaken)+", "+st.JourneyStart.ReturnGuiTime()+", "+st.JourneyEnd.ReturnGuiTime()+"\n");
+            i++;
+        }
+                
+        TheOutput += "********************\n********************\n\n";
+       
+        
+        //OutputTextArea.append(TheOutput);
+        
+        File OutputFile = new File(FileNameField.getText() + File.separator + "RunData_" + Now.ReturnGuiTime()+".txt");
+        
+        try{
+            Writer ToGoOut = new BufferedWriter(new FileWriter(OutputFile));
+            ToGoOut.write(TheOutput);
+            ToGoOut.close();
+            TheOutput += ("Output Data also written to: " + OutputFile.getPath());
+        }
+        catch(Exception e)
+        {
+            TheOutput += ("Output file failed to write: " + e.toString());
+        }
+        TheOutput += "\n\n";
+        
+        OutputTextArea.append(TheOutput);
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BrowseFileButton;

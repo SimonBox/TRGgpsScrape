@@ -37,20 +37,23 @@ public class ScrapeAway {
         
     }
     
-    public void ListGPXdata()
+    public Vector<JourneyStats> ListGPXdata()
     {
+        Vector<JourneyStats> TheStats = new Vector<JourneyStats>();
         for(String fn : Filenames)
         {
             String fPath = GPXfolder.getPath() + GPXfolder.separator + fn;
             RWgpxXML ReadGPX = new RWgpxXML(fPath,StartTime,EndTime);
-            CalculateTrackStatistics(ReadGPX.LoggedPositions);
+            JourneyStats JS = CalculateTrackStatistics(ReadGPX.LoggedPositions);
+            TheStats.add(JS);
         }
-        
+        return(TheStats);
     }
     
-    private void CalculateTrackStatistics(Vector<PositionSample> TheData){
+    private JourneyStats CalculateTrackStatistics(Vector<PositionSample> TheData){
         
         double DistanceTravelled = 0;
+        double WeightedSpeed = 0;
         int j=0;
         for(int i=1;i<TheData.size();i++)
         {
@@ -66,14 +69,33 @@ public class ScrapeAway {
             else{
                 j++;
             }
+            
+            Long msWeight = TheData.get(i).time.TheDate.getTime()-TheData.get(i-1).time.TheDate.getTime();
+            double sWeight = (double)msWeight/1000;
+            
+            WeightedSpeed += TheData.get(i).speed*sWeight;
+            
+            
         }
         
         Long msGap = TheData.lastElement().time.TheDate.getTime()-TheData.firstElement().time.TheDate.getTime();
-        String t1 = TheData.firstElement().time.ReturnGuiTime();
-        String t2 = TheData.lastElement().time.ReturnGuiTime();
+        
         double sTimespan = (double)msGap/1000;
         
-        double msSpeed = DistanceTravelled/sTimespan;
+        double Speed1 = DistanceTravelled/sTimespan;
+        double Speed2 = WeightedSpeed/sTimespan;
+        
+        
+        JourneyStats JS = new JourneyStats();
+        JS.DistanceTravelled = DistanceTravelled;
+        JS.TimeTaken = sTimespan;
+        JS.AvSpeed1 = Speed1;
+        JS.AvSpeed2 = Speed2;
+        
+        JS.JourneyStart = TheData.firstElement().time;
+        JS.JourneyEnd = TheData.lastElement().time;
+        
+        return(JS);
     }
     
 }
