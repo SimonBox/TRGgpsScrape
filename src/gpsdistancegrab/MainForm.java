@@ -23,7 +23,7 @@ public class MainForm extends javax.swing.JFrame {
      */
     public MainForm() {
         initComponents();
-        
+
         //new setup code added by simon
         DateField.setValue(new Date());
         StartTimeField.setValue(new Date());
@@ -125,18 +125,15 @@ public class MainForm extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(OutputScrollPane))
+                        .addGap(185, 185, 185)
+                        .addComponent(RunButton))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(185, 185, 185)
-                                .addComponent(RunButton))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(jLabel5)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addContainerGap()
+                        .addComponent(jLabel5))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(OutputScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 518, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -199,7 +196,7 @@ public class MainForm extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(FileLoadPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(DateTimePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(56, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -219,21 +216,27 @@ public class MainForm extends javax.swing.JFrame {
     }//GEN-LAST:event_DateFieldActionPerformed
 
     private void RunButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RunButtonActionPerformed
-        // TODO add your handling code here:
-        ScrapeAway TheScraper = new ScrapeAway(FileNameField.getText(),DateField.getText(),StartTimeField.getText(),EndTimeField.getText());
-        Vector<JourneyStats> Statistics = TheScraper.ListGPXdata();
-        
-        OutputRunStatistics(Statistics);
+        try {
+            ScrapeAway TheScraper = new ScrapeAway(FileNameField.getText(), DateField.getText(), StartTimeField.getText(), EndTimeField.getText());
+            Vector<JourneyStats> Statistics = TheScraper.ListGPXdata();
+            if (Statistics.isEmpty()) {
+                OutputTextArea.append("Error: found no gpx files with data in that range.");
+            } else {
+                OutputRunStatistics(Statistics);
+            }
+        } catch (Exception e) {
+            OutputTextArea.append(e.getMessage());
+            e.printStackTrace();
+        }
     }//GEN-LAST:event_RunButtonActionPerformed
 
     private void BrowseFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BrowseFileButtonActionPerformed
         // TODO add your handling code here:
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        int RetVal =fc.showOpenDialog(null);
-        
-        if(RetVal == fc.APPROVE_OPTION)
-        {
+        int RetVal = fc.showOpenDialog(null);
+
+        if (RetVal == fc.APPROVE_OPTION) {
             String Filename = fc.getSelectedFile().getPath();
             FileNameField.setText(Filename);
             //OutputTextArea.append(Filename + '\n');
@@ -280,81 +283,90 @@ public class MainForm extends javax.swing.JFrame {
                 new MainForm().setVisible(true);
             }
         });
-        
-        
+
+
     }
-    
-    private void OutputRunStatistics(Vector<JourneyStats> TheStats)
-    {
+
+    private void OutputRunStatistics(Vector<JourneyStats> TheStats) {
         double TotalDistance = 0;
         double AverageDistance;
         double AverageSpeed1 = 0;
         double AverageSpeed2 = 0;
         double TotalTime = 0;
         double AverageTime = 0;
-        
+        double TotalTimeStopped = 0;
+        double TotalTimeMoving = 0;
+        double AverageTimeStopped = 0;
+        double AverageTimeMoving = 0;
+
         int N = TheStats.size();
-        
-        for(JourneyStats st : TheStats)
-        {
+
+        for (JourneyStats st : TheStats) {
             TotalDistance += st.DistanceTravelled;
             AverageSpeed1 += st.AvSpeed1;
             AverageSpeed2 += st.AvSpeed2;
             TotalTime += st.TimeTaken;
+            TotalTimeStopped += st.TimeStopped;
+            TotalTimeMoving += st.TimeMoving;
         }
-        
-        AverageDistance = TotalDistance/N;
-        AverageSpeed1 = AverageSpeed1/N;
-        AverageSpeed2 = AverageSpeed2/N;
-        AverageTime = TotalTime/N;
-        
+
+        AverageDistance = TotalDistance / N;
+        AverageSpeed1 = AverageSpeed1 / N;
+        AverageSpeed2 = AverageSpeed2 / N;
+        AverageTime = TotalTime / N;
+        AverageTimeStopped = TotalTimeStopped / N;
+        AverageTimeMoving = TotalTimeMoving / N;
+
         //WRITE the output string
-        
+
         DecimalFormat form = new DecimalFormat("0.00");
-        
-        String TheOutput="";
+
+        String TheOutput = "";
         TimeStamper Now = new TimeStamper();
         TheOutput += ("Run on " + Now.ReturnGuiTime() + "\n");
-        TheOutput += ("Data Folder: " + FileNameField.getText()+ "\n\n");
-        
+        TheOutput += ("Data Folder: " + FileNameField.getText() + "\n\n");
+
         TheOutput += ("**Average Data**\n");
         TheOutput += ("Number of Vehicles: " + Integer.toString(N) + "\n");
-        TheOutput += ("Total Distance: " +form.format(TotalDistance/1000) + " km\n");
-        TheOutput += ("Average Distance: " +form.format(AverageDistance/1000) + " km\n");
-        TheOutput += ("Average Speed 1: " +form.format(AverageSpeed1*3.6) + " kph\n");
-        TheOutput += ("Average Speed 2: " +form.format(AverageSpeed2*3.6) + " kph\n");
-        TheOutput += ("Total Time: " +form.format(TotalTime/60) + " min\n");
-        TheOutput += ("Average Time: " +form.format(AverageTime/60) + " min\n\n");
+        TheOutput += ("Total Distance: " + form.format(TotalDistance / 1000) + " km\n");
+        TheOutput += ("Average Distance: " + form.format(AverageDistance / 1000) + " km\n");
+        TheOutput += ("Average Speed 1: " + form.format(AverageSpeed1 * 3.6) + " kph\n");
+        TheOutput += ("Average Speed 2: " + form.format(AverageSpeed2 * 3.6) + " kph\n\n");
         
-        TheOutput +=("**Individual vehicle data**\n");
-        TheOutput +=("Car, Distance (m), Av Speed 1 (m/s), Total Time (s), Start, End\n");
+        TheOutput += ("Total Time: " + form.format(TotalTime / 60) + " min\n");
+        TheOutput += ("Total Time Stopped: " + form.format(TotalTimeStopped / 60) + " min\n");
+        TheOutput += ("Total Time Moving: " + form.format(TotalTimeMoving / 60) + " min\n\n");
         
-        int i=1;
-        for(JourneyStats st : TheStats)
-        {
-            TheOutput += (form.format(i)+", "+form.format(st.DistanceTravelled)+", "+form.format(st.AvSpeed1)+", "+form.format(st.TimeTaken)+", "+st.JourneyStart.ReturnGuiTime()+", "+st.JourneyEnd.ReturnGuiTime()+"\n");
+        TheOutput += ("Average Time: " + form.format(AverageTime / 60) + " min\n");
+        TheOutput += ("Average Time Stopped: " + form.format(AverageTimeStopped / 60) + "min\n");
+        TheOutput += ("Average Time Moving: " + form.format(AverageTimeMoving / 60) + "min\n\n");
+        
+        TheOutput += ("**Individual vehicle data**\n");
+        TheOutput += ("Car, Distance (m), Av Speed 1 (m/s), Total Time (s), Start, End\n");
+
+        int i = 1;
+        for (JourneyStats st : TheStats) {
+            TheOutput += (form.format(i) + ", " + form.format(st.DistanceTravelled) + ", " + form.format(st.AvSpeed1) + ", " + form.format(st.TimeTaken) + ", " + st.JourneyStart.ReturnGuiTime() + ", " + st.JourneyEnd.ReturnGuiTime() + "\n");
             i++;
         }
-                
+
         TheOutput += "********************\n********************\n\n";
-       
-        
+
+
         //OutputTextArea.append(TheOutput);
-        
-        File OutputFile = new File(FileNameField.getText() + File.separator + "RunData_" + Now.ReturnGuiTime()+".txt");
-        
-        try{
+
+        File OutputFile = new File(FileNameField.getText() + File.separator + "RunData_" + Now.ReturnFileNameTime() + ".txt");
+
+        try {
             Writer ToGoOut = new BufferedWriter(new FileWriter(OutputFile));
             ToGoOut.write(TheOutput);
             ToGoOut.close();
             TheOutput += ("Output Data also written to: " + OutputFile.getPath());
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             TheOutput += ("Output file failed to write: " + e.toString());
         }
         TheOutput += "\n\n";
-        
+
         OutputTextArea.append(TheOutput);
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables

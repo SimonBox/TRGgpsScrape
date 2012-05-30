@@ -13,6 +13,8 @@ public class JourneyStats {
     double TimeTaken;
     double AvSpeed1;
     double AvSpeed2;
+    double TimeStopped;
+    double TimeMoving;
     TimeStamper JourneyStart;
     TimeStamper JourneyEnd;
     

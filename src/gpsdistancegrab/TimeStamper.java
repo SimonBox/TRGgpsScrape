@@ -15,11 +15,13 @@ public class TimeStamper {
     Date TheDate;
     SimpleDateFormat Guiparser;
     SimpleDateFormat GPXparser;
+    SimpleDateFormat fileNameParser;
     boolean LoadedOK;
 
     public TimeStamper(){
         Guiparser = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss");
         GPXparser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        fileNameParser = new SimpleDateFormat("yyyyMMdd_HHmmss");
         TheDate = new Date();
         LoadedOK = false;
     }
@@ -34,6 +36,10 @@ public class TimeStamper {
         return(GPXparser.format(TheDate));
     }
     
+    public String ReturnFileNameTime()
+    {
+        return(fileNameParser.format(TheDate));
+    }
     
     public void LoadGPXdate(String dateS)
     {
